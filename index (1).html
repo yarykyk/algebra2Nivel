@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Колоквіум — відповіді за варіантом</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:wght@400;600&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f6f9fd;--ink:#1c2535;--mut:#5a6a85;--ac:#2f5597;--hl:#d4edf7;--ln:#d5deec;--grid:#e6edf7;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#141b28;--ink:#e6ecf7;--mut:#9aa9c4;--ac:#8db4f0;--hl:#1f3b52;--ln:#2c3a52;--grid:#1a2333}}
+:root[data-theme="dark"]{--bg:#141b28;--ink:#e6ecf7;--mut:#9aa9c4;--ac:#8db4f0;--hl:#1f3b52;--ln:#2c3a52;--grid:#1a2333}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.55 "Source Serif 4",Georgia,serif;
+background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:24px 24px}
+main{max-width:860px;margin:0 auto;padding:28px 18px 60px}
+h1{font:600 30px/1.2 "Source Serif 4",Georgia,serif;margin:0 0 4px}
+.sub{color:var(--mut);font:15px "Source Sans 3",system-ui,sans-serif;margin:0 0 22px}
+.pick{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--hl);padding:14px 16px;border-radius:6px}
+.pick label{font:600 16px "Source Sans 3",system-ui,sans-serif}
+.pick input{width:92px;font:600 26px "Source Serif 4",Georgia,serif;text-align:center;padding:4px 8px;border:2px solid var(--ac);border-radius:6px;background:var(--bg);color:var(--ink)}
+button{font:600 15px "Source Sans 3",system-ui,sans-serif;padding:9px 14px;border:1px solid var(--ac);background:var(--bg);color:var(--ac);border-radius:6px;cursor:pointer}
+button:hover{background:var(--ac);color:var(--bg)}
+:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+.err{color:#c0392b;font:15px "Source Sans 3",system-ui,sans-serif;min-height:22px;margin:8px 0}
+.vals{font:15px "Source Sans 3",system-ui,sans-serif;color:var(--mut);margin:14px 0 6px}
+.t{display:grid;grid-template-columns:44px 1fr;gap:0 12px;padding:18px 0;border-top:1px solid var(--ln)}
+.n{font:600 28px "Source Serif 4",Georgia,serif;color:var(--ac);line-height:1}
+.cond{color:var(--mut);font:15px/1.4 "Source Sans 3",system-ui,sans-serif;margin:0 0 6px}
+.ans{margin:0}
+.ans p{margin:4px 0}
+.ans b{font-weight:600}
+.row{display:flex;flex-wrap:wrap;gap:6px 22px;align-items:center;margin:6px 0}
+.nm{margin-right:6px;font-style:italic}
+table.m{display:inline-table;border-collapse:separate;border-spacing:10px 2px;border-left:2px solid var(--ink);border-right:2px solid var(--ink);border-radius:4px;margin:4px 8px 4px 2px;vertical-align:middle}
+table.m td{text-align:center;min-width:22px}
+td.hit{background:var(--hl);font-weight:600;border-radius:3px}
+.note{color:var(--mut);font:14px "Source Sans 3",system-ui,sans-serif}
+.foot{margin-top:24px;color:var(--mut);font:14px/1.5 "Source Sans 3",system-ui,sans-serif;border-top:1px solid var(--ln);padding-top:14px}
+@media(max-width:560px){.t{grid-template-columns:30px 1fr}.n{font-size:22px}}
+</style>
+</head>
+<body>
+<main>
+<h1>Колоквіум, рівень 2</h1>
+<p class="sub">Введіть номер варіанта від 1 до 100 — нижче з’являться приклади до всіх дев’яти завдань.</p>
+<div class="pick">
+<label for="k">Варіант</label>
+<button id="prev" aria-label="Попередній варіант">‹</button>
+<input id="k" type="number" min="1" max="100" value="1" inputmode="numeric">
+<button id="next" aria-label="Наступний варіант">›</button>
+<button id="copy">Копіювати текст</button>
+</div>
+<div class="err" id="err" role="alert"></div>
+<div id="out"></div>
+<p class="foot">k mod* n — остача від ділення k на n зі значеннями 1…n (якщо k ділиться на n, то результат n). Це один із можливих прикладів для кожного завдання; інші правильні приклади теж підійдуть.</p>
+</main>
+<script>
+const ms=(k,n)=>k%n===0?n:k%n;
+const gcd=(a,b)=>b?gcd(b,a%b):Math.abs(a);
+const fr=(n,d=1)=>{const g=gcd(n,d)||1;n/=g;d/=g;if(d<0){n=-n;d=-d}return(n<0?'−':'')+Math.abs(n)+(d===1?'':'/'+d)};
+const mx=(M,hit)=>'<table class="m">'+M.map((r,i)=>'<tr>'+r.map((v,j)=>'<td'+(hit&&hit[0]===i&&hit[1]===j?' class="hit"':'')+'>'+(typeof v==='string'?v:fr(v))+'</td>').join('')+'</tr>').join('')+'</table>';
+const nm=(n,M,hit)=>'<span class="nm">'+n+' =</span>'+mx(M,hit);
+const mul=(A,B)=>A.map(r=>B[0].map((_,j)=>r.reduce((s,v,k)=>s+v*B[k][j],0)));
+const sup={1:'¹',2:'²',3:'³',4:'⁴',5:'⁵',6:'⁶',7:'⁷',8:'⁸',9:'⁹'};
+
+const Z4={1:'z = −1',2:'z = −1/2 + (√3/2)·i',3:'z = i',4:'z = cos 72° + i·sin 72°',5:'z = 1/2 + (√3/2)·i',6:'z = cos(2π/7) + i·sin(2π/7)',7:'z = √2/2 + (√2/2)·i',8:'z = cos 40° + i·sin 40°'};
+const I3=()=>[[1,0,0],[0,1,0],[0,0,1]];
+const FAC=[['P₁₂ — обмін рядків 1 і 2',(()=>{const M=I3();M[0]=[0,1,0];M[1]=[1,0,0];return M})()],
+['D₁(2) — рядок 1 помножити на 2',(()=>{const M=I3();M[0][0]=2;return M})()],
+['T₂₁(3) — до рядка 2 додати 3·(рядок 1)',(()=>{const M=I3();M[1][0]=3;return M})()],
+['T₃₁(1) — до рядка 3 додати рядок 1',(()=>{const M=I3();M[2][0]=1;return M})()],
+['T₃₂(2) — до рядка 3 додати 2·(рядок 2)',(()=>{const M=I3();M[2][1]=2;return M})()],
+['D₂(3) — рядок 2 помножити на 3',(()=>{const M=I3();M[1][1]=3;return M})()]];
+
+const A8=[[1,2],[3,4],[5,6]],C8=[[1,2,3],[4,7,5]],R8=[-9,-8,-7,-6,-5,-4,-3,-2,-1,1,2,3,4,5,6,7,8,9],cache8={};
+function solveB(i,j,t){const key=i+','+j+','+t;if(cache8[key])return cache8[key];let best=null,bc=1e9;
+for(const a of R8)for(const b of R8){if(b===a)continue;for(const c of R8){if(c===a||c===b)continue;for(const d of R8){if(d===a||d===b||d===c)continue;
+const v=A8[i][0]*C8[0][j]*a+A8[i][0]*C8[1][j]*b+A8[i][1]*C8[0][j]*c+A8[i][1]*C8[1][j]*d;
+if(v===t){const cost=Math.abs(a)+Math.abs(b)+Math.abs(c)+Math.abs(d);if(cost<bc){bc=cost;best=[[a,b],[c,d]]}}}}}
+return cache8[key]=best}
+
+function build(k){
+const m1=ms(k,5),c2=ms(k,4),a3=ms(k,10),b3=ms(k,11),n4=ms(k,8),p=ms(k,2),q=ms(k,3),
+a6=ms(k,5),b6=ms(k,6),c6=ms(k,7),N7=ms(k,4)+2,i8=ms(k,3)-1,j8=ms(k,2),t8=ms(k,8);
+const T=[];
+// 1
+const bad=m1===1?2:(m1===2||m1===4)?3:2;
+T.push([`Кільце, що містить число 1/${m1}, але не є полем`,
+ m1===1?`<p><b>ℤ</b> — кільце цілих чисел (тут 1/1 = 1).</p><p>Не поле: 2 не має оберненого.</p>`
+ :`<p><b>ℤ[1/${m1}]</b> = { a/${m1}ⁿ : a ∈ ℤ, n ≥ 0 }${m1===4?' (те саме, що ℤ[1/2])':''}.</p><p>Містить 1/${m1}. Не поле: ${bad} не має оберненого.</p>`]);
+// 2
+T.push([`Моноїд, не група, нескінченний, без числа ${c2}`,
+ `<p><b>({0, ${c2+1}, ${c2+2}, …}, +)</b>, тобто {0} ∪ {n ∈ ℕ : n > ${c2}} відносно додавання.</p><p>Нейтральний елемент 0; числа ${c2} немає; не група: ${c2+1} не має оберненого.</p>`]);
+// 3
+const bi=b3===1?'i':b3+'i';
+T.push([`Квадратне рівняння з дійсними коефіцієнтами з коренем z = ${a3} + ${bi}`,
+ `<p><b>x² − ${2*a3}x + ${a3*a3+b3*b3} = 0</b></p><p class="note">Корені ${a3} ± ${bi}.</p>`]);
+// 4
+T.push([`Комплексне число z, що z${n4===1?'':sup[n4]} = z̄`,
+ `<p><b>${Z4[n4]}</b></p><p class="note">|z| = 1 і z${sup[n4+1]||'^'+(n4+1)} = 1, тому z${n4===1?'':sup[n4]} = 1/z = z̄ (z = e^(2πi/${n4+1})).</p>`]);
+// 5
+const A5=p===1?[[2,1,3],[1,0,1],[0,1,1]]:[[1,1,2],[1,0,1],[0,1,1]];
+const co=p===1?[2,1]:[1,1],b1=[p+1,p,p-1],b2=[q-1,q,q+1];
+const eq=r=>r.map((v,i)=>v?(v===1?'':v)+'xyz'[i]:'').filter(Boolean).join(' + ');
+T.push([`СЛАР 3×3 з непропорційними рівняннями; права частина (${p+1}, ${p}, ${p-1})ᵀ — розв’язок є, (${q-1}, ${q}, ${q+1})ᵀ — ні`,
+ `<div class="row">${A5.map((r,i)=>`<span>${eq(r)} = <i>b${i+1}</i></span>`).join('')}</div>
+ <p>b = (${b1.join(', ')})ᵀ → <b>розв’язок є</b> (b₁ = ${co[0]}·b₂ + ${co[1]}·b₃: ${b1[0]} = ${co[0]*b1[1]+co[1]*b1[2]}).</p>
+ <p>b = (${b2.join(', ')})ᵀ → <b>розв’язків немає</b> (${b2[0]} ≠ ${co[0]*b2[1]+co[1]*b2[2]}).</p>
+ <p class="note">Рядки: р₁ = ${co[0]===2?'2р₂ + р₃':'р₂ + р₃'}, попарно не пропорційні.</p>`]);
+// 6
+const A6=[[a6,b6,c6],[0,1,0],[0,0,1]];
+const Ai=[[fr(1,a6),fr(-b6,a6),fr(-c6,a6)],[0,1,0],[0,0,1]];
+T.push([`Матриця та обернена до неї; в одній є рядок (${a6}, ${b6}, ${c6})`,
+ `<div class="row">${nm('A',A6)}${nm('A⁻¹',Ai)}</div><p class="note">det A = ${a6} ≠ 0.</p>`]);
+// 7
+const used=FAC.slice(0,N7);let P=I3();used.forEach(f=>P=mul(P,f[1]));
+T.push([`Матриця 3×3 — добуток рівно ${N7} елементарних матриць усіх трьох типів, серед яких немає взаємно обернених`,
+ `<p><b>M = ${used.map(f=>f[0].split(' ')[0]).join(' · ')}</b>, де</p><p class="note">${used.map(f=>f[0]).join('<br>')}</p>${nm('M',P)}`]);
+// 8
+const B=solveB(i8,j8,t8),P8=mul(mul(A8,B),C8);
+T.push([`Матриці A (3×2), B (2×2), C (2×3) без нулів і з різними елементами; у ABC елемент (${i8+1}, ${j8+1}) дорівнює ${t8}`,
+ `<div class="row">${nm('A',A8)}${nm('B',B)}${nm('C',C8)}</div><div class="row">${nm('ABC',P8,[i8,j8])}</div><p class="note">(ABC)[${i8+1},${j8+1}] = ${P8[i8][j8]}.</p>`]);
+// 9
+T.push([`${p+2} векторів у ℝ² без колінеарних і ${p+1} різні лінійні комбінації з однаковим результатом`,
+ p===1?`<p>v₁ = (1, 0), v₂ = (0, 1), v₃ = (1, 1)</p><p>Однаковий результат (1, 1):</p><p>0·v₁ + 0·v₂ + 1·v₃ &nbsp;і&nbsp; 1·v₁ + 1·v₂ + 0·v₃</p>`
+ :`<p>v₁ = (1, 0), v₂ = (0, 1), v₃ = (1, 1), v₄ = (1, 2)</p><p>Однаковий результат (1, 1):</p><p>0·v₁ + 0·v₂ + 1·v₃ + 0·v₄<br>1·v₁ + 1·v₂ + 0·v₃ + 0·v₄<br>0·v₁ − 1·v₂ + 0·v₃ + 1·v₄</p>`]);
+const vals=`k = ${k}:  k mod* 2 = ${p},  k mod* 3 = ${q},  k mod* 4 = ${c2},  k mod* 5 = ${m1},  k mod* 6 = ${b6},  k mod* 7 = ${c6},  k mod* 8 = ${n4},  k mod* 10 = ${a3},  k mod* 11 = ${b3}`;
+return `<p class="vals">${vals}</p>`+T.map((t,i)=>`<section class="t"><div class="n">${i+1}</div><div><p class="cond">${t[0]}</p><div class="ans">${t[1]}</div></div></section>`).join('');
+}
+
+const inp=document.getElementById('k'),out=document.getElementById('out'),err=document.getElementById('err');
+function show(v,push){
+ const k=Math.floor(Number(v));
+ if(!v||isNaN(k)||k<1||k>100){err.textContent='Введіть ціле число від 1 до 100.';return}
+ err.textContent='';inp.value=k;out.innerHTML=build(k);
+ if(push){try{history.replaceState(null,'','#v'+k)}catch(e){}}
+}
+inp.addEventListener('input',()=>show(inp.value,true));
+document.getElementById('prev').onclick=()=>show(Math.max(1,(+inp.value||1)-1),true);
+document.getElementById('next').onclick=()=>show(Math.min(100,(+inp.value||0)+1),true);
+document.getElementById('copy').onclick=async e=>{try{await navigator.clipboard.writeText(out.innerText);e.target.textContent='Скопійовано'}catch(x){e.target.textContent='Не вдалося скопіювати'}setTimeout(()=>e.target.textContent='Копіювати текст',1500)};
+const h=/^#v(\d+)$/.exec(location.hash);
+show(h?h[1]:1,false);
+</script>
+</body>
+</html>
